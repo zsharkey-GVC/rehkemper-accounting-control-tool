@@ -1,3 +1,8 @@
+import React, { useMemo, useState, useEffect } from "react";
+import ReactDOM from "react-dom/client";
+
+const reviewLabel = "Jessica - Director of Finance";
+
 const seedData = [
   {
     id: 1,
@@ -958,3 +963,601 @@ const seedData = [
     lastReviewed: "2026-04-11"
   }
 ];
+
+const emptyForm = {
+  term: "",
+  category: "Operating Expense",
+  subcategory: "",
+  approvalLevel: "Staff",
+  riskLevel: "STANDARD",
+  escalationRequired: "None unless unusual",
+  quickBooksMapping: "",
+  commonMistake: "",
+  whyItMatters: "",
+  description: "",
+  classifyAs: "",
+  doNotClassifyAs: "",
+  keywords: "",
+  examples: "",
+  journalEntry: "",
+  notes: "",
+  lastReviewed: new Date().toISOString().slice(0, 10)
+};
+
+const allCategoryOptions = [
+  "All",
+  "1099 / Vendor Setup",
+  "Accounts Payable",
+  "Accounts Receivable",
+  "Advertising & Marketing",
+  "Banking & Treasury",
+  "Capital Expenditures",
+  "Credit Cards",
+  "Customer Deposits",
+  "Depreciation & Amortization",
+  "Design / Engineering",
+  "Equity / Distributions",
+  "Fixed Assets",
+  "Freight & Logistics",
+  "Insurance",
+  "Intercompany / Related Party",
+  "Inventory Adjustments",
+  "Job Costs & Contract Costs",
+  "Judgment Area",
+  "Leases / Rent",
+  "Meals / Travel",
+  "Office & Administrative",
+  "Owner / Related Party",
+  "Payroll / Labor",
+  "Prepaids / Accruals",
+  "Raw Materials & Inventory",
+  "Repairs & Maintenance",
+  "Revenue & Customer Deposits",
+  "Safety & Compliance",
+  "Sales Tax / Use Tax",
+  "Software & Technology",
+  "Tax & Compliance",
+  "Telecom & Utilities",
+  "Tools & Consumables",
+  "Vehicles / Fleet",
+  "Warehousing / Yard",
+  "WIP / Production"
+];
+
+const styles = {
+  page: { minHeight: "100vh", background: "#f4f7fb", fontFamily: "Inter, Arial, sans-serif", color: "#142033", padding: 24 },
+  shell: { maxWidth: 1450, margin: "0 auto" },
+  hero: { background: "linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%)", color: "white", borderRadius: 24, padding: 28, boxShadow: "0 20px 60px rgba(15, 23, 42, 0.18)" },
+  heroTitle: { margin: 0, fontSize: 40, lineHeight: 1.1, letterSpacing: "-0.02em" },
+  heroSub: { marginTop: 10, maxWidth: 1000, color: "rgba(255,255,255,0.86)", fontSize: 16 },
+  heroRow: { display: "flex", flexWrap: "wrap", gap: 12, marginTop: 18 },
+  button: { border: 0, borderRadius: 14, padding: "12px 16px", fontWeight: 700, cursor: "pointer" },
+  buttonPrimary: { background: "white", color: "#0f172a" },
+  buttonSecondary: { background: "rgba(255,255,255,0.12)", color: "white", border: "1px solid rgba(255,255,255,0.22)" },
+  statsGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16, marginTop: 20 },
+  statCard: { background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 18, padding: 16 },
+  statLabel: { fontSize: 13, opacity: 0.8 },
+  statValue: { fontSize: 28, fontWeight: 800, marginTop: 6 },
+  mainGrid: { display: "grid", gridTemplateColumns: "390px 1fr", gap: 20, marginTop: 22 },
+  card: { background: "white", borderRadius: 22, padding: 18, boxShadow: "0 12px 30px rgba(15, 23, 42, 0.08)", border: "1px solid #e6ecf5" },
+  sectionTitle: { margin: 0, fontSize: 20 },
+  input: { width: "100%", boxSizing: "border-box", border: "1px solid #d6deea", borderRadius: 14, padding: "12px 14px", fontSize: 15, outline: "none", background: "#fbfcfe" },
+  select: { width: "100%", boxSizing: "border-box", border: "1px solid #d6deea", borderRadius: 14, padding: "12px 14px", fontSize: 15, outline: "none", background: "#fbfcfe" },
+  textarea: { width: "100%", minHeight: 90, boxSizing: "border-box", border: "1px solid #d6deea", borderRadius: 14, padding: "12px 14px", fontSize: 15, outline: "none", resize: "vertical", background: "#fbfcfe" },
+  field: { marginTop: 14 },
+  label: { display: "block", fontWeight: 700, fontSize: 13, marginBottom: 7, color: "#334155" },
+  badge: { display: "inline-block", borderRadius: 999, padding: "7px 11px", fontWeight: 700, fontSize: 12 },
+  list: { marginTop: 16, maxHeight: 720, overflowY: "auto", paddingRight: 6 },
+  listItem: (active) => ({ border: active ? "1px solid #2563eb" : "1px solid #e6ecf5", background: active ? "#eff6ff" : "white", borderRadius: 18, padding: 14, cursor: "pointer", marginBottom: 10, boxShadow: active ? "0 8px 20px rgba(37, 99, 235, 0.12)" : "none" }),
+  listTitle: { fontWeight: 800, fontSize: 16, marginBottom: 6 },
+  rowBetween: { display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap" },
+  detailHeader: { display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start", flexWrap: "wrap" },
+  detailTitle: { margin: 0, fontSize: 30, letterSpacing: "-0.02em" },
+  infoGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16, marginTop: 18 },
+  infoPanel: { borderRadius: 18, padding: 16, border: "1px solid #e6ecf5", background: "#fbfcfe" },
+  okPanel: { borderRadius: 18, padding: 16, border: "1px solid #b7e2c1", background: "#ecfdf3" },
+  warnPanel: { borderRadius: 18, padding: 16, border: "1px solid #f2d08b", background: "#fff8e8" },
+  riskPanel: (level) => ({
+    borderRadius: 18,
+    padding: 16,
+    border: level === "HIGH RISK" ? "1px solid #fecaca" : level === "REVIEW REQUIRED" ? "1px solid #fde68a" : "1px solid #bbf7d0",
+    background: level === "HIGH RISK" ? "#fef2f2" : level === "REVIEW REQUIRED" ? "#fff7ed" : "#f0fdf4"
+  }),
+  tabRow: { display: "flex", gap: 10, flexWrap: "wrap", marginTop: 18 },
+  tabButton: (active) => ({ borderRadius: 999, border: active ? "1px solid #2563eb" : "1px solid #d6deea", background: active ? "#eff6ff" : "white", color: active ? "#1d4ed8" : "#334155", padding: "10px 16px", fontWeight: 800, cursor: "pointer" }),
+  pre: { whiteSpace: "pre-wrap", background: "#0f172a", color: "#f8fafc", borderRadius: 18, padding: 18, fontSize: 14, overflowX: "auto" },
+  chips: { display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 },
+  chip: { background: "#eef2ff", border: "1px solid #c7d2fe", color: "#3730a3", padding: "7px 10px", borderRadius: 999, fontSize: 12, fontWeight: 700 },
+  ul: { paddingLeft: 18, margin: "10px 0 0 0" },
+  overlay: { position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 18, zIndex: 20 },
+  modal: { width: "min(940px, 100%)", maxHeight: "90vh", overflowY: "auto", background: "white", borderRadius: 24, padding: 22, boxShadow: "0 24px 80px rgba(15, 23, 42, 0.28)" },
+  formGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 },
+  helperGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginTop: 18 },
+  helperCard: { background: "#f8fafc", border: "1px solid #e6ecf5", borderRadius: 18, padding: 16 }
+};
+
+function exportJson(entries) {
+  const blob = new Blob([JSON.stringify(entries, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "rehkemper-elite-accounting-data.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function saveToBrowser(entries) {
+  localStorage.setItem("rehkemperEliteAccountingToolData", JSON.stringify(entries));
+}
+
+function loadFromBrowser() {
+  try {
+    const raw = localStorage.getItem("rehkemperEliteAccountingToolData");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function riskBadge(level) {
+  if (level === "HIGH RISK") return { background: "#fee2e2", color: "#991b1b" };
+  if (level === "REVIEW REQUIRED") return { background: "#fef3c7", color: "#92400e" };
+  return { background: "#dcfce7", color: "#166534" };
+}
+
+function App() {
+  const initialData = loadFromBrowser() || seedData;
+  const [entries, setEntries] = useState(initialData);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
+  const [selectedId, setSelectedId] = useState(initialData[0]?.id || null);
+  const [tab, setTab] = useState("guidance");
+  const [showModal, setShowModal] = useState(false);
+  const [form, setForm] = useState(emptyForm);
+
+  useEffect(() => {
+    saveToBrowser(entries);
+  }, [entries]);
+
+  const categories = useMemo(() => {
+    const dynamic = Array.from(new Set(entries.map((item) => item.category))).sort();
+    return ["All", ...Array.from(new Set([...allCategoryOptions.filter(x => x !== "All"), ...dynamic]))];
+  }, [entries]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return entries.filter((item) => {
+      const matchesCategory = category === "All" || item.category === category;
+      const haystack = [
+        item.term,
+        item.category,
+        item.subcategory,
+        item.description,
+        item.classifyAs,
+        item.doNotClassifyAs,
+        item.notes,
+        item.journalEntry,
+        item.riskLevel,
+        item.escalationRequired,
+        item.quickBooksMapping,
+        item.commonMistake,
+        item.whyItMatters,
+        ...(item.keywords || []),
+        ...(item.examples || [])
+      ].join(" ").toLowerCase();
+      return matchesCategory && (!q || haystack.includes(q));
+    });
+  }, [entries, search, category]);
+
+  const selected = filtered.find((x) => x.id === selectedId) || filtered[0] || null;
+
+  function resetForm() {
+    setForm({ ...emptyForm, lastReviewed: new Date().toISOString().slice(0, 10) });
+  }
+
+  function addGuideline() {
+    if (!form.term.trim()) return;
+    const newEntry = {
+      id: Date.now(),
+      term: form.term.trim(),
+      category: form.category.trim(),
+      subcategory: form.subcategory.trim(),
+      approvalLevel: form.approvalLevel.trim(),
+      riskLevel: form.riskLevel.trim(),
+      escalationRequired: form.escalationRequired.trim(),
+      quickBooksMapping: form.quickBooksMapping.trim(),
+      commonMistake: form.commonMistake.trim(),
+      whyItMatters: form.whyItMatters.trim(),
+      description: form.description.trim(),
+      classifyAs: form.classifyAs.trim(),
+      doNotClassifyAs: form.doNotClassifyAs.trim(),
+      keywords: form.keywords.split(",").map((x) => x.trim()).filter(Boolean),
+      examples: form.examples.split("\n").map((x) => x.trim()).filter(Boolean),
+      journalEntry: form.journalEntry.trim(),
+      notes: form.notes.trim(),
+      lastReviewed: form.lastReviewed
+    };
+    const next = [newEntry, ...entries];
+    setEntries(next);
+    setSelectedId(newEntry.id);
+    setShowModal(false);
+    resetForm();
+  }
+
+  function importJson(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const parsed = JSON.parse(e.target.result);
+        if (Array.isArray(parsed) && parsed.length) {
+          setEntries(parsed);
+          setSelectedId(parsed[0].id);
+        }
+      } catch {
+        alert("That file could not be imported. Please use a valid JSON export.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function resetToDefaults() {
+    if (window.confirm("Reset the tool back to the original Rehkemper elite sample data?")) {
+      setEntries(seedData);
+      setSelectedId(seedData[0].id);
+      localStorage.removeItem("rehkemperEliteAccountingToolData");
+    }
+  }
+
+  const statCards = [
+    { label: "Guidelines", value: String(entries.length) },
+    { label: "Categories", value: String(categories.length - 1) },
+    { label: "High Risk Items", value: String(entries.filter((x) => x.riskLevel === "HIGH RISK").length) },
+    { label: reviewLabel + " Review", value: String(entries.filter((x) => x.approvalLevel === reviewLabel).length) }
+  ];
+
+  return (
+    <div style={styles.page}>
+      <div style={styles.shell}>
+        <div style={styles.hero}>
+          <h1 style={styles.heroTitle}>Rehkemper & Son, Inc. Accounting Control Tool</h1>
+          <div style={styles.heroSub}>
+            Customized for Rehkemper’s truss and building component operations. This elite version adds risk flags, escalation controls, QuickBooks mapping, common mistakes, and financial reporting rationale so bookkeepers can classify transactions consistently and leadership can reinforce stronger accounting controls.
+          </div>
+
+          <div style={styles.heroRow}>
+            <button style={{ ...styles.button, ...styles.buttonPrimary }} onClick={() => setShowModal(true)}>+ Add Guideline</button>
+            <button style={{ ...styles.button, ...styles.buttonSecondary }} onClick={() => exportJson(entries)}>Export Data</button>
+            <label style={{ ...styles.button, ...styles.buttonSecondary, display: "inline-flex", alignItems: "center" }}>
+              Import Data
+              <input type="file" accept="application/json" style={{ display: "none" }} onChange={importJson} />
+            </label>
+            <button style={{ ...styles.button, ...styles.buttonSecondary }} onClick={resetToDefaults}>Reset Sample Data</button>
+          </div>
+
+          <div style={styles.statsGrid}>
+            {statCards.map((card) => (
+              <div key={card.label} style={styles.statCard}>
+                <div style={styles.statLabel}>{card.label}</div>
+                <div style={styles.statValue}>{card.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={styles.mainGrid}>
+          <div style={styles.card}>
+            <div style={styles.rowBetween}>
+              <h2 style={styles.sectionTitle}>Search and Filter</h2>
+              <span style={{ ...styles.badge, background: "#eef2ff", color: "#3730a3" }}>
+                {filtered.length} match{filtered.length === 1 ? "" : "es"}
+              </span>
+            </div>
+
+            <div style={{ ...styles.field, marginTop: 14 }}>
+              <label style={styles.label}>Search</label>
+              <input
+                style={styles.input}
+                placeholder="Search by term, vendor type, product line, keyword, or journal entry"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+
+            <div style={styles.field}>
+              <label style={styles.label}>Category</label>
+              <select style={styles.select} value={category} onChange={(e) => setCategory(e.target.value)}>
+                {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+              </select>
+            </div>
+
+            <div style={styles.list}>
+              {filtered.map((item) => (
+                <div key={item.id} style={styles.listItem(selected?.id === item.id)} onClick={() => { setSelectedId(item.id); setTab("guidance"); }}>
+                  <div style={styles.rowBetween}>
+                    <div>
+                      <div style={styles.listTitle}>{item.term}</div>
+                      <div style={{ color: "#64748b", fontSize: 13 }}>{item.subcategory || item.category}</div>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                      <span style={{ ...styles.badge, ...riskBadge(item.riskLevel) }}>{item.riskLevel}</span>
+                      <span
+                        style={{
+                          ...styles.badge,
+                          background: item.approvalLevel === reviewLabel ? "#ede9fe" : item.approvalLevel === "Manager" ? "#e0f2fe" : "#ecfdf3",
+                          color: item.approvalLevel === reviewLabel ? "#6d28d9" : item.approvalLevel === "Manager" ? "#075985" : "#166534"
+                        }}
+                      >
+                        {item.approvalLevel}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {!filtered.length && <div style={{ ...styles.infoPanel, textAlign: "center", color: "#64748b" }}>No matching guidelines found.</div>}
+            </div>
+          </div>
+
+          <div style={styles.card}>
+            {!selected ? (
+              <div style={{ color: "#64748b" }}>Select a guideline to view details.</div>
+            ) : (
+              <>
+                <div style={styles.detailHeader}>
+                  <div>
+                    <h2 style={styles.detailTitle}>{selected.term}</h2>
+                    <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      <span style={{ ...styles.badge, background: "#dbeafe", color: "#1d4ed8" }}>{selected.category}</span>
+                      <span style={{ ...styles.badge, background: "#f8fafc", color: "#334155", border: "1px solid #e2e8f0" }}>{selected.subcategory}</span>
+                      <span style={{ ...styles.badge, ...riskBadge(selected.riskLevel) }}>{selected.riskLevel}</span>
+                      <span style={{ ...styles.badge, background: "#ede9fe", color: "#6d28d9" }}>{selected.approvalLevel}</span>
+                    </div>
+                  </div>
+                  <div style={{ color: "#64748b", fontWeight: 700, marginTop: 6 }}>Last Reviewed: {selected.lastReviewed}</div>
+                </div>
+
+                <div style={styles.infoGrid}>
+                  <div style={styles.riskPanel(selected.riskLevel)}>
+                    <div style={{ fontWeight: 800, marginBottom: 8 }}>Escalation Required</div>
+                    <div>{selected.escalationRequired}</div>
+                  </div>
+                  <div style={styles.infoPanel}>
+                    <div style={{ fontWeight: 800, marginBottom: 8 }}>QuickBooks Mapping</div>
+                    <div>{selected.quickBooksMapping}</div>
+                  </div>
+                </div>
+
+                <div style={styles.tabRow}>
+                  {["guidance", "journal entry", "examples / controls"].map((name) => (
+                    <button key={name} style={styles.tabButton(tab === name)} onClick={() => setTab(name)}>
+                      {name[0].toUpperCase() + name.slice(1)}
+                    </button>
+                  ))}
+                </div>
+
+                {tab === "guidance" && (
+                  <>
+                    <div style={styles.infoGrid}>
+                      <div style={styles.okPanel}>
+                        <div style={{ fontWeight: 800, marginBottom: 8 }}>Classify As</div>
+                        <div>{selected.classifyAs}</div>
+                      </div>
+                      <div style={styles.warnPanel}>
+                        <div style={{ fontWeight: 800, marginBottom: 8 }}>Do Not Classify As</div>
+                        <div>{selected.doNotClassifyAs}</div>
+                      </div>
+                    </div>
+
+                    <div style={{ ...styles.infoPanel, marginTop: 16 }}>
+                      <div style={{ fontWeight: 800 }}>Description</div>
+                      <div style={{ marginTop: 8 }}>{selected.description}</div>
+                    </div>
+
+                    <div style={{ ...styles.infoPanel, marginTop: 16 }}>
+                      <div style={{ fontWeight: 800 }}>Common Mistake</div>
+                      <div style={{ marginTop: 8 }}>{selected.commonMistake}</div>
+                    </div>
+
+                    <div style={{ ...styles.infoPanel, marginTop: 16 }}>
+                      <div style={{ fontWeight: 800 }}>Why This Matters</div>
+                      <div style={{ marginTop: 8 }}>{selected.whyItMatters}</div>
+                    </div>
+
+                    <div style={{ ...styles.infoPanel, marginTop: 16 }}>
+                      <div style={{ fontWeight: 800 }}>Keywords</div>
+                      <div style={styles.chips}>
+                        {selected.keywords.map((kw) => <span key={kw} style={styles.chip}>{kw}</span>)}
+                      </div>
+                    </div>
+
+                    <div style={{ ...styles.infoPanel, marginTop: 16 }}>
+                      <div style={{ fontWeight: 800 }}>Notes / Policy Guidance</div>
+                      <div style={{ marginTop: 8, whiteSpace: "pre-wrap" }}>{selected.notes}</div>
+                    </div>
+                  </>
+                )}
+
+                {tab === "journal entry" && (
+                  <div style={{ marginTop: 18 }}>
+                    <div style={{ ...styles.infoPanel, marginBottom: 16 }}>
+                      <div style={{ fontWeight: 800 }}>Suggested Journal Entry</div>
+                      <div style={{ marginTop: 8, color: "#64748b" }}>
+                        Use this as the standard treatment unless a documented exception applies.
+                      </div>
+                    </div>
+                    <div style={styles.pre}>{selected.journalEntry}</div>
+                  </div>
+                )}
+
+                {tab === "examples / controls" && (
+                  <div style={{ marginTop: 18 }}>
+                    <div style={styles.helperGrid}>
+                      <div style={styles.helperCard}>
+                        <div style={{ fontWeight: 800 }}>Examples</div>
+                        <ul style={styles.ul}>
+                          {selected.examples.map((example, index) => <li key={index} style={{ marginBottom: 8 }}>{example}</li>)}
+                        </ul>
+                      </div>
+                      <div style={styles.helperCard}>
+                        <div style={{ fontWeight: 800 }}>Approval Level</div>
+                        <div style={{ marginTop: 10 }}>{selected.approvalLevel}</div>
+                      </div>
+                      <div style={styles.helperCard}>
+                        <div style={{ fontWeight: 800 }}>Control Reminder</div>
+                        <div style={{ marginTop: 10 }}>
+                          If the item is unusual, large, related-party, period-sensitive, or judgment-heavy, escalate before posting.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
+        <div style={{ ...styles.card, marginTop: 20 }}>
+          <h2 style={styles.sectionTitle}>How to Update This Tool</h2>
+          <div style={styles.helperGrid}>
+            <div style={styles.helperCard}>
+              <div style={{ fontWeight: 800 }}>Add New Rules</div>
+              <div style={{ marginTop: 10 }}>
+                Click <b>Add Guideline</b> to create new Rehkemper-specific rules for recurring accounting questions.
+              </div>
+            </div>
+            <div style={styles.helperCard}>
+              <div style={{ fontWeight: 800 }}>Save to Browser</div>
+              <div style={{ marginTop: 10 }}>
+                Changes save automatically in the browser on that computer. For backup, export the data to JSON.
+              </div>
+            </div>
+            <div style={styles.helperCard}>
+              <div style={{ fontWeight: 800 }}>Move Between Computers</div>
+              <div style={{ marginTop: 10 }}>
+                Use <b>Export Data</b> on one computer and <b>Import Data</b> on another computer to carry your custom library with you.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {showModal && (
+          <div style={styles.overlay} onClick={() => setShowModal(false)}>
+            <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+              <div style={styles.rowBetween}>
+                <h2 style={{ margin: 0, fontSize: 28 }}>Add Accounting Guideline</h2>
+                <button style={{ ...styles.button, background: "#eef2ff", color: "#3730a3" }} onClick={() => setShowModal(false)}>
+                  Close
+                </button>
+              </div>
+
+              <div style={{ ...styles.formGrid, marginTop: 16 }}>
+                <div>
+                  <label style={styles.label}>Term</label>
+                  <input style={styles.input} value={form.term} onChange={(e) => setForm({ ...form, term: e.target.value })} placeholder="Example: New forklift purchase" />
+                </div>
+                <div>
+                  <label style={styles.label}>Category</label>
+                  <select style={styles.select} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
+                    {allCategoryOptions.filter(x => x !== "All").map((cat) => <option key={cat}>{cat}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={styles.label}>Subcategory</label>
+                  <input style={styles.input} value={form.subcategory} onChange={(e) => setForm({ ...form, subcategory: e.target.value })} placeholder="Example: Machinery & Equipment" />
+                </div>
+                <div>
+                  <label style={styles.label}>Approval Level</label>
+                  <select style={styles.select} value={form.approvalLevel} onChange={(e) => setForm({ ...form, approvalLevel: e.target.value })}>
+                    <option>Staff</option>
+                    <option>Manager</option>
+                    <option>{reviewLabel}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ ...styles.formGrid, marginTop: 14 }}>
+                <div>
+                  <label style={styles.label}>Risk Level</label>
+                  <select style={styles.select} value={form.riskLevel} onChange={(e) => setForm({ ...form, riskLevel: e.target.value })}>
+                    <option>STANDARD</option>
+                    <option>REVIEW REQUIRED</option>
+                    <option>HIGH RISK</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={styles.label}>Escalation Required</label>
+                  <input style={styles.input} value={form.escalationRequired} onChange={(e) => setForm({ ...form, escalationRequired: e.target.value })} placeholder="Example: Jessica - Director of Finance" />
+                </div>
+              </div>
+
+              <div style={styles.field}>
+                <label style={styles.label}>QuickBooks Mapping</label>
+                <input style={styles.input} value={form.quickBooksMapping} onChange={(e) => setForm({ ...form, quickBooksMapping: e.target.value })} placeholder="Example: Fixed Assets → Machinery & Equipment" />
+              </div>
+
+              <div style={styles.field}>
+                <label style={styles.label}>Common Mistake</label>
+                <textarea style={styles.textarea} value={form.commonMistake} onChange={(e) => setForm({ ...form, commonMistake: e.target.value })} />
+              </div>
+
+              <div style={styles.field}>
+                <label style={styles.label}>Why This Matters</label>
+                <textarea style={styles.textarea} value={form.whyItMatters} onChange={(e) => setForm({ ...form, whyItMatters: e.target.value })} />
+              </div>
+
+              <div style={styles.field}>
+                <label style={styles.label}>Description</label>
+                <textarea style={styles.textarea} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+              </div>
+
+              <div style={styles.field}>
+                <label style={styles.label}>Classify As</label>
+                <textarea style={styles.textarea} value={form.classifyAs} onChange={(e) => setForm({ ...form, classifyAs: e.target.value })} />
+              </div>
+
+              <div style={styles.field}>
+                <label style={styles.label}>Do Not Classify As</label>
+                <textarea style={styles.textarea} value={form.doNotClassifyAs} onChange={(e) => setForm({ ...form, doNotClassifyAs: e.target.value })} />
+              </div>
+
+              <div style={styles.field}>
+                <label style={styles.label}>Keywords (comma-separated)</label>
+                <input style={styles.input} value={form.keywords} onChange={(e) => setForm({ ...form, keywords: e.target.value })} placeholder="forklift, capital, fixed asset" />
+              </div>
+
+              <div style={styles.field}>
+                <label style={styles.label}>Examples (one per line)</label>
+                <textarea style={styles.textarea} value={form.examples} onChange={(e) => setForm({ ...form, examples: e.target.value })} placeholder={"Forklift purchase\nNew saw system"} />
+              </div>
+
+              <div style={styles.field}>
+                <label style={styles.label}>Suggested Journal Entry</label>
+                <textarea style={styles.textarea} value={form.journalEntry} onChange={(e) => setForm({ ...form, journalEntry: e.target.value })} />
+              </div>
+
+              <div style={styles.field}>
+                <label style={styles.label}>Notes / Policy Guidance</label>
+                <textarea style={styles.textarea} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+              </div>
+
+              <div style={styles.field}>
+                <label style={styles.label}>Last Reviewed</label>
+                <input type="date" style={styles.input} value={form.lastReviewed} onChange={(e) => setForm({ ...form, lastReviewed: e.target.value })} />
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 18 }}>
+                <button style={{ ...styles.button, background: "#f1f5f9", color: "#0f172a" }} onClick={resetForm}>Reset</button>
+                <button style={{ ...styles.button, background: "#2563eb", color: "white" }} onClick={addGuideline}>Save Guideline</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
